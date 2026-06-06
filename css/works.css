@@ -44,11 +44,13 @@
     align-items: center;
     gap: 20px;
     will-change: transform;
+    transform: translate3d(0,0,0);
 }
 
 .featured-work-item {
     flex-shrink: 0;
-transform: translateZ(0);
+backface-visibility: hidden;
+    transform: translate3d(0,0,0);
     will-change: transform;
     width: 65vw;
     height: 94vh;
@@ -155,7 +157,7 @@ transform: translateZ(0);
     z-index: 1;
     /* Video starts invisible — shown only when loaded AND active */
     opacity: 1;
-    transition: opacity 0.35s ease;
+    transition: opacity 0.55s ease;
 }
 
 /* Show video ONLY when it is both loaded (is-ready) AND the slide is active (video-playing) */

@@ -38,10 +38,18 @@ class WorksSlider {
         this.smoothX = 0; this.smoothY = 0;
 
         this._bindEvents();
-        this._bindProgressScrub();
-        this._animateCursor();
+this._bindProgressScrub();
+this._animateCursor();
+
+// 🔥 wait for layout stabilization BEFORE first center
+requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
         this.centerSlide(false);
-        this._bindSectionObserver();
+        this._updateVideo();
+    });
+});
+
+this._bindSectionObserver();
     }
 
     // ─── Section visibility observer ─────────────────────────────────────────
@@ -244,6 +252,14 @@ _prepareActiveSlide(slide) {
 }
     centerSlide(animated = true) {
     const active = this.slides[this.currentIndex];
+
+    if (!active) return;
+
+    // 🔥 prevent first-frame jump
+    if (!this._didInit) {
+        this._didInit = true;
+        this.track.style.transition = "none";
+    }
 
     // 🔥 PRE-STATE before animation
     this._prepareActiveSlide(active);
