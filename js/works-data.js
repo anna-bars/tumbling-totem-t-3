@@ -93,37 +93,53 @@ function buildTrackHTML(worksArray, lang, translations) {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
     return worksArray.map((w, i) => {
-        const title   = lang === 'nl' ? w.title_nl : w.title_en;
-        const desc    = lang === 'nl' ? w.desc_nl  : w.desc_en;
-        const tag1    = lang === 'nl' ? w.tag1_nl  : w.tag1_en;
-        const tag3    = lang === 'nl' ? w.tag3_nl  : w.tag3_en;
-        const catText = t[w.cat_key] || w.cat_key;
-        const poster  = (isMobile && w.image_mobile) ? w.image_mobile : w.image;
+    const title   = lang === 'nl' ? w.title_nl : w.title_en;
+    const desc    = lang === 'nl' ? w.desc_nl  : w.desc_en;
+    const tag1    = lang === 'nl' ? w.tag1_nl  : w.tag1_en;
+    const tag3    = lang === 'nl' ? w.tag3_nl  : w.tag3_en;
+    const catText = t[w.cat_key] || w.cat_key;
 
-        const videoHTML = w.video ? `
-    <video
-        class="work-item-video"
-        data-src="${w.video}"
-        poster="${poster}"
-        muted
-        loop
-        playsinline
-        preload="none"
-    ></video>` : '';
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const poster  = (isMobile && w.image_mobile) ? w.image_mobile : w.image;
+    const hasVideo = !!w.video;
 
-        // Progress bar — top-right horizontal, scrubable on hover
-        const progressHTML = w.video ? `
-    <div class="work-item-progress-wrap">
-        <div class="work-item-progress">
-            <div class="work-item-progress-fill"></div>
-            <div class="work-item-progress-thumb"></div>
-            <div class="work-item-progress-hit"></div>
-        </div>
-    </div>` : '';
+    const videoHTML = hasVideo ? `
+        <video
+            class="work-item-video"
+            data-src="${w.video}"
+            poster="${poster}"
+            muted
+            loop
+            playsinline
+            preload="none"
+        ></video>` : '';
 
-        return `<div class="featured-work-item${w.video ? ' has-video' : ''}" style="background-image: url(${poster});" data-work-id="${i + 1}" data-overlay-title="${title}" data-overlay-desc="${desc}">${videoHTML}
-    <img class="work-item-seo-img" src="${poster}" alt="${title} – 3D animation by Tumbling Totem" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+    const progressHTML = hasVideo ? `
+        <div class="work-item-progress-wrap">
+            <div class="work-item-progress">
+                <div class="work-item-progress-fill"></div>
+                <div class="work-item-progress-thumb"></div>
+                <div class="work-item-progress-hit"></div>
+            </div>
+        </div>` : '';
+
+    return `
+<div class="featured-work-item${hasVideo ? ' has-video' : ''}"
+     ${hasVideo ? '' : `style="background-image: url(${poster});"` }
+     data-work-id="${i + 1}"
+     data-overlay-title="${title}"
+     data-overlay-desc="${desc}">
+
+    ${videoHTML}
+
+    <img class="work-item-seo-img"
+         src="${poster}"
+         alt="${title}"
+         aria-hidden="true"
+         style="position:absolute;width:1px;height:1px;opacity:0;">
+
     <div class="work-item-top-shadow"></div>
+
     <div class="work-item-bottom-info">
         <h2 class="work-item-bottom-info-title">${title}</h2>
         <div class="work-item-bottom-info-tags">
@@ -133,8 +149,11 @@ function buildTrackHTML(worksArray, lang, translations) {
             <div class="tag-divider-circle"></div>
             <p>${tag3}</p>
         </div>
-    </div>${progressHTML}
+    </div>
+
+    ${progressHTML}
+
     <div class="work-item-bottom-shadow"></div>
 </div>`;
-    }).join('\n');
+}).join('\n');
 }

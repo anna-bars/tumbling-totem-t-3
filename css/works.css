@@ -48,7 +48,8 @@
 
 .featured-work-item {
     flex-shrink: 0;
-
+transform: translateZ(0);
+    will-change: transform;
     width: 65vw;
     height: 94vh;
 
@@ -153,8 +154,8 @@
     object-fit: cover;
     z-index: 1;
     /* Video starts invisible — shown only when loaded AND active */
-    opacity: 0;
-    transition: opacity 0.6s ease;
+    opacity: 1;
+    transition: opacity 0.35s ease;
 }
 
 /* Show video ONLY when it is both loaded (is-ready) AND the slide is active (video-playing) */
@@ -412,4 +413,11 @@
 .featured-work-item.is-revealed .overlay-desc {
     opacity: 1;
     transform: translateY(0);
+}
+.featured-work-item.video-playing .work-item-video {
+    opacity: 1;
+}
+/* poster completely hidden once video is active */
+.featured-work-item.poster-hidden {
+    background-image: none !important;
 }

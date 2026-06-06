@@ -75,57 +75,61 @@ class WorksSlider {
     // ─── Video ────────────────────────────────────────────────────────────────
 
     _updateVideo() {
-        if (!this._sectionVisible) return;
+    if (!this._sectionVisible) return;
 
-        this.slides.forEach((slide, idx) => {
-            const video = slide.querySelector('video.work-item-video');
+    this.slides.forEach((slide, idx) => {
+        const video = slide.querySelector('video.work-item-video');
 
-            if (idx === this.currentIndex) {
-                if (!video) return; // no video on this slide — preview image stays
+        if (idx === this.currentIndex) {
 
-                // ── Lazy-load: set src if not yet loaded ──
-                if (!video.src && video.dataset.src) {
-                    video.src = video.dataset.src;
-                }
+            if (!video) return;
 
-                // ── If already loaded before — just resume ──
-                if (video.classList.contains('is-ready')) {
-                    slide.classList.add('video-playing');
-                    setTimeout(() => slide.classList.add('poster-hidden'), 650);
-                    const p = video.play();
-                    if (p) p.catch(() => {});
-                    this._startProgress(video, slide);
-                    return;
-                }
-
-                // ── Wait for canplay, THEN show video (poster stays until ready) ──
-                const onCanPlay = () => {
-                    video.classList.add('is-ready');
-                    slide.classList.add('video-playing');
-                    // Remove poster background only AFTER video has faded in (0.6s)
-                    setTimeout(() => slide.classList.add('poster-hidden'), 650);
-                    this._startProgress(video, slide);
-                };
-                video.addEventListener('canplay', onCanPlay, { once: true });
-
-                // Already buffered enough?
-                if (video.readyState >= 3) {
-                    onCanPlay();
-                } else {
-                    // Start loading/playing in background — video stays opacity:0
-                    // until is-ready fires, poster remains visible in the meantime
-                    const p = video.play();
-                    if (p) p.catch(() => {});
-                }
-
-            } else {
-                // ── Non-active: pause, hide video, show poster ──
-                if (video && !video.paused) video.pause();
-                // Remove video-playing and poster-hidden so poster shows again
-                slide.classList.remove('video-playing', 'poster-hidden');
+            // ✅ instant load fix
+            if (!video.src && video.dataset.src) {
+                video.src = video.dataset.src;
+                video.load();
             }
-        });
-    }
+
+            if (video.classList.contains('is-ready')) {
+                slide.classList.add('video-playing');
+                slide.classList.add('poster-hidden'); // ❗ instant, no delay
+
+                const p = video.play();
+                if (p) p.catch(() => {});
+
+                this._startProgress(video, slide);
+                return;
+            }
+
+            const onCanPlay = () => {
+                video.classList.add('is-ready');
+                slide.classList.add('video-playing');
+
+                // ❗ no timeout → no preview flash
+                slide.classList.add('poster-hidden');
+
+                const p = video.play();
+                if (p) p.catch(() => {});
+
+                this._startProgress(video, slide);
+            };
+
+            video.addEventListener('canplay', onCanPlay, { once: true });
+
+            if (video.readyState >= 3) {
+                onCanPlay();
+            } else {
+                const p = video.play();
+                if (p) p.catch(() => {});
+            }
+
+        } else {
+            if (video && !video.paused) video.pause();
+
+            slide.classList.remove('video-playing', 'poster-hidden');
+        }
+    });
+}
 
     _startProgress(video, slide) {
         if (this._rafId) {
@@ -223,23 +227,44 @@ class WorksSlider {
         this.slides[this.currentIndex - 1]?.classList.add("is-prev");
         this.slides[this.currentIndex + 1]?.classList.add("is-next");
     }
+_prepareActiveSlide(slide) {
+    if (!slide) return;
 
-    centerSlide(animated = true) {
-        const active = this.slides[this.currentIndex];
-        const offset =
-            active.offsetLeft -
-            (window.innerWidth / 2) +
-            (active.offsetWidth / 2);
-        this.track.style.transition = animated
-            ? "transform .8s cubic-bezier(.77,0,.18,1)"
-            : "none";
-        this.track.style.transform = `translateX(${-offset}px)`;
-        this.updateClasses();
-        this.isHoveringActive = false;
-        clearTimeout(this._hoverTimer);
-        this._setLabel('SWIPE');
+    const video = slide.querySelector('video.work-item-video');
+
+    if (!video) return;
+
+    // preload state BEFORE animation
+    if (!video.src && video.dataset.src) {
+        video.src = video.dataset.src;
+        video.load();
     }
 
+    slide.classList.add('video-preparing');
+}
+    centerSlide(animated = true) {
+    const active = this.slides[this.currentIndex];
+
+    // 🔥 PRE-STATE before animation
+    this._prepareActiveSlide(active);
+
+    const offset =
+        active.offsetLeft -
+        (window.innerWidth / 2) +
+        (active.offsetWidth / 2);
+
+    this.track.style.transition = animated
+        ? "transform .8s cubic-bezier(.77,0,.18,1)"
+        : "none";
+
+    this.track.style.transform = `translateX(${-offset}px)`;
+
+    this.updateClasses();
+
+    this.isHoveringActive = false;
+    clearTimeout(this._hoverTimer);
+    this._setLabel('SWIPE');
+}
     _reorderAndRecenter() {
         this.track.style.transition = "none";
         this.track.style.transform  = "translateX(0px)";
