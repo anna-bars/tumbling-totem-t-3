@@ -1,0 +1,415 @@
+.featured-works {
+    background: linear-gradient(180deg, #141414, #111111);
+    padding: 105px 0 32px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.featured-works-cont {
+    cursor: none;
+}
+
+.featured-works-cont * {
+    cursor: none !important;
+}
+
+/* Progress wrap and its children get normal cursor back */
+.work-item-progress-wrap,
+.work-item-progress-wrap * {
+    cursor: ew-resize !important;
+}
+
+.featured-works-title {
+    padding: 0 2.5%;
+    font-size: 42px;
+    font-weight: 500;
+    color: white;
+    margin-bottom: 44px;
+}
+
+.featured-works-title span {
+    font-family: 'ADVENTURES';
+    font-size: 32px;
+}
+
+.featured-works-cont {
+    width: 100%;
+    overflow: visible;
+    position: relative;
+    user-select: none;
+}
+
+.featured-works-track {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    will-change: transform;
+}
+
+.featured-work-item {
+    flex-shrink: 0;
+
+    width: 65vw;
+    height: 94vh;
+
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+
+    background-size: cover;
+    background-position: center;
+
+    transition:
+        transform .6s ease,
+        opacity .6s ease;
+}
+
+.featured-work-item.is-active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.featured-work-item.is-prev,
+.featured-work-item.is-next {
+    opacity: .45;
+    transform: scale(.99);
+}
+
+.featured-work-item:not(.is-active):not(.is-prev):not(.is-next) {
+    opacity: .95;
+    transform: scale(.98);
+}
+
+/* ── Bottom info ──────────────────────────────────────────────────────────── */
+
+.work-item-top-info {
+    display: none;
+}
+
+.work-item-bottom-info {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    bottom: 28px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    z-index: 5;
+    color: white;
+}
+
+.work-item-bottom-info-title {
+    font-size: 40px;
+    text-transform: uppercase;
+    line-height: 34px;
+}
+
+.work-item-bottom-info-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.work-item-bottom-info-tags p {
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.tag-divider-circle {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: white;
+}
+
+/* ── Shadows ─────────────────────────────────────────────────────────────── */
+
+.work-item-top-shadow {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 18%;
+    background: linear-gradient(180deg, rgba(0,0,0,.5), rgba(0,0,0,0));
+    z-index: 4;
+}
+
+.work-item-bottom-shadow {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 35%;
+    background: linear-gradient(0deg, rgba(0,0,0,.68), rgba(0,0,0,0));
+    z-index: 4;
+}
+
+/* ── Video ───────────────────────────────────────────────────────────────── */
+
+.featured-work-item.has-video .work-item-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    /* Video starts invisible — shown only when loaded AND active */
+    opacity: 0;
+    transition: opacity 0.6s ease;
+}
+
+/* Show video ONLY when it is both loaded (is-ready) AND the slide is active (video-playing) */
+.featured-work-item.has-video.video-playing .work-item-video.is-ready {
+    opacity: 1;
+}
+
+/* Remove poster background ONLY after video is ready and playing —
+   this prevents the poster flash because background-image:none fires
+   at the same moment opacity:1 kicks in on the video element */
+.featured-work-item.has-video.video-playing.poster-hidden {
+    background-image: none !important;
+}
+
+.featured-work-item.has-video .work-item-top-shadow,
+.featured-work-item.has-video .work-item-bottom-info,
+.featured-work-item.has-video .work-item-bottom-shadow,
+.featured-work-item.has-video .work-item-click-overlay,
+.featured-work-item.has-video .work-item-seo-img,
+.featured-work-item.has-video .work-item-progress-wrap {
+    z-index: 5;
+}
+
+/* ── Progress wrap — top-right, horizontal ───────────────────────────────── */
+
+.work-item-progress-wrap {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 6;
+
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.featured-work-item.is-active.has-video .work-item-progress-wrap {
+    opacity: 1;
+}
+
+/* The thin horizontal progress bar */
+.work-item-progress {
+    position: relative;
+    width: 120px;
+    height: 2px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.work-item-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: rgba(255, 255, 255, 0.88);
+    border-radius: 2px;
+    transition: width 0.1s linear;
+    pointer-events: none;
+}
+
+/* Scrub thumb — tiny dot, shows on hover */
+.work-item-progress-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Invisible large hit area for scrubbing */
+.work-item-progress-hit {
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    bottom: -12px;
+    cursor: pointer !important;
+    z-index: 2;
+}
+
+/* On hover of the hit area, expand bar + show thumb */
+.work-item-progress-wrap:hover .work-item-progress {
+    height: 4px;
+    transition: height 0.2s ease;
+}
+
+.work-item-progress-wrap:hover .work-item-progress-thumb {
+    opacity: 1;
+}
+
+.work-item-progress-wrap:hover .work-item-progress-fill {
+    transition: none; /* instant during scrub */
+}
+
+/* ── Drag hint ───────────────────────────────────────────────────────────── */
+
+.drag-hint {
+    display: none !important;
+}
+
+/* ── Custom cursor ───────────────────────────────────────────────────────── */
+
+.works-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity .35s ease,
+        visibility .35s ease,
+        width .3s ease,
+        height .3s ease;
+
+    --drag-offset: 0px;
+
+    background: rgba(255, 255, 255, 0.1);
+    background-image: url(./img/featured-works/circle-back.png);
+    background-size: cover;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.4);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    will-change: transform;
+}
+
+.works-cursor-label {
+    color: white;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.4;
+    user-select: none;
+    transition: opacity .2s ease;
+}
+
+.works-cursor.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.works-cursor.is-dragging {
+    width: 75px;
+    height: 75px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.works-cursor.is-dragging::before,
+.works-cursor.is-dragging::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    opacity: 0.7;
+}
+
+.works-cursor.is-dragging::before {
+    content: '‹';
+    left: 12px;
+    font-size: 22px;
+    color: white;
+    opacity: 0.8;
+    line-height: 1;
+    border: none;
+    width: auto;
+    height: auto;
+}
+
+.works-cursor.is-dragging::after {
+    content: '›';
+    right: 12px;
+    font-size: 22px;
+    color: white;
+    opacity: 0.8;
+    line-height: 1;
+    border: none;
+    width: auto;
+    height: auto;
+}
+
+/* ── Second works section ────────────────────────────────────────────────── */
+
+.featured-works2 {
+    background: #111111;
+    padding: 0 0 105px 0;
+}
+
+/* ── Click overlay ───────────────────────────────────────────────────────── */
+
+.work-item-click-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: background 0.35s ease;
+    pointer-events: none;
+}
+
+.work-item-click-overlay .overlay-title {
+    color: white;
+    font-size: 32px;
+    text-transform: uppercase;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    text-align: center;
+    padding: 0 24px;
+    margin: 0;
+}
+
+.work-item-click-overlay .overlay-desc {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    margin-top: 12px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
+    text-align: center;
+    padding: 0 32px;
+    max-width: 420px;
+    line-height: 1.5;
+}
+
+.featured-work-item.is-revealed .work-item-click-overlay {
+    background: rgba(0, 0, 0, 0.62);
+}
+
+.featured-work-item.is-revealed .overlay-title,
+.featured-work-item.is-revealed .overlay-desc {
+    opacity: 1;
+    transform: translateY(0);
+}
