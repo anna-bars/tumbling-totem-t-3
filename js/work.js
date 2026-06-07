@@ -14,6 +14,11 @@ class WorksSlider {
         this._hoverTimer  = null;
         this._rafId       = null;
         this._sectionVisible = false;
+        
+        // Constants for transition
+        this.TRANSITION_DURATION = "1.2s";
+        this.TRANSITION_EASING = "cubic-bezier(0.2, 0.9, 0.4, 1.1)";
+        this.TRANSITION_PROPERTY = `transform ${this.TRANSITION_DURATION} ${this.TRANSITION_EASING}`;
 
         // Build overlay text for each slide
         this.slides.forEach(slide => {
@@ -221,27 +226,26 @@ class WorksSlider {
     }
 
     centerSlide(animated = true) {
-    const active = this.slides[this.currentIndex];
-    if (!active) return;
-    
-    this._prepareActiveSlide(active);
-    
-    const offset = active.offsetLeft - (window.innerWidth / 2) + (active.offsetWidth / 2);
-    
-    if (animated) {
-        // ԱՎԵԼԱՑՐԵՔ transition ժամանակը - 1.2s
-        this.track.style.transition = "transform 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1)";
-    } else {
-        this.track.style.transition = "none";
+        const active = this.slides[this.currentIndex];
+        if (!active) return;
+        
+        this._prepareActiveSlide(active);
+        
+        const offset = active.offsetLeft - (window.innerWidth / 2) + (active.offsetWidth / 2);
+        
+        if (animated) {
+            this.track.style.transition = this.TRANSITION_PROPERTY;
+        } else {
+            this.track.style.transition = "none";
+        }
+        
+        this.track.style.transform = `translateX(${-offset}px)`;
+        this.updateClasses();
+        
+        this.isHoveringActive = false;
+        clearTimeout(this._hoverTimer);
+        this._setLabel('SWIPE');
     }
-    
-    this.track.style.transform = `translateX(${-offset}px)`;
-    this.updateClasses();
-    
-    this.isHoveringActive = false;
-    clearTimeout(this._hoverTimer);
-    this._setLabel('SWIPE');
-}
 
     nextSlide() {
         if (this.track.dataset.animating === "true") return;
@@ -265,7 +269,8 @@ class WorksSlider {
                 const newOffset = newActive.offsetLeft - (window.innerWidth / 2) + (newActive.offsetWidth / 2);
                 this.track.style.transform = `translateX(${-newOffset}px)`;
                 void this.track.offsetHeight;
-                this.track.style.transition = "transform .8s cubic-bezier(0.2, 0.9, 0.4, 1.1)";
+                // ✅ FIX: use same transition property
+                this.track.style.transition = this.TRANSITION_PROPERTY;
             }
             
             this._updateVideo();
@@ -300,7 +305,8 @@ class WorksSlider {
                 const newOffset = newActive.offsetLeft - (window.innerWidth / 2) + (newActive.offsetWidth / 2);
                 this.track.style.transform = `translateX(${-newOffset}px)`;
                 void this.track.offsetHeight;
-                this.track.style.transition = "transform .8s cubic-bezier(0.2, 0.9, 0.4, 1.1)";
+                // ✅ FIX: use same transition property
+                this.track.style.transition = this.TRANSITION_PROPERTY;
             }
             
             this._updateVideo();

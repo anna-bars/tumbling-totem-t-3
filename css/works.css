@@ -45,15 +45,15 @@
     align-items: center;
     gap: 20px;
     will-change: transform;
-    transition: transform .8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    transition: transform 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
 
-/* WORK ITEM - base styles */
+/* WORK ITEM - base styles with ALL animations */
 .featured-work-item {
     flex-shrink: 0;
     backface-visibility: hidden;
     transform: translate3d(0,0,0);
-    will-change: transform;
+    will-change: transform, opacity;
     width: 65vw;
     height: 94vh;
     border-radius: 18px;
@@ -62,24 +62,44 @@
     background-size: cover;
     background-position: center;
     background-color: #000;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: 
+        transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Active slide states */
+/* Active slide states with smooth animations */
 .featured-work-item.is-active {
     opacity: 1;
     transform: scale(1);
+    transition: 
+        transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        opacity 0.6s ease;
 }
 
 .featured-work-item.is-prev,
 .featured-work-item.is-next {
-    opacity: .45;
-    transform: scale(.99);
+    opacity: 0.45;
+    transform: scale(0.99);
+    transition: 
+        transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        opacity 0.6s ease;
 }
 
 .featured-work-item:not(.is-active):not(.is-prev):not(.is-next) {
-    opacity: .95;
-    transform: scale(.98);
+    opacity: 0.8;
+    transform: scale(0.99);
+    pointer-events: none;
+    transition: 
+        transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        opacity 0.6s ease;
+}
+
+/* Hover effect for non-active slides */
+.featured-work-item.is-prev:hover,
+.featured-work-item.is-next:hover {
+    opacity: 0.65;
+    transform: scale(0.98);
+    transition: all 0.4s ease;
 }
 
 /* ── Bottom info ──────────────────────────────────────────────────────────── */
@@ -97,12 +117,24 @@
     align-items: flex-end;
     z-index: 5;
     color: white;
+    opacity: 1;
+    transition: opacity 0.4s ease 0.1s;
+}
+
+.featured-work-item:not(.is-active) .work-item-bottom-info {
+    opacity: 0.7;
 }
 
 .work-item-bottom-info-title {
     font-size: 40px;
     text-transform: uppercase;
     line-height: 34px;
+    transform: translateY(0);
+    transition: transform 0.4s ease;
+}
+
+.featured-work-item:not(.is-active) .work-item-bottom-info-title {
+    transform: translateY(10px);
 }
 
 .work-item-bottom-info-tags {
@@ -131,6 +163,12 @@
     height: 18%;
     background: linear-gradient(180deg, rgba(0,0,0,.5), rgba(0,0,0,0));
     z-index: 4;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+
+.featured-work-item:not(.is-active) .work-item-top-shadow {
+    opacity: 0.6;
 }
 
 .work-item-bottom-shadow {
@@ -139,6 +177,12 @@
     height: 35%;
     background: linear-gradient(0deg, rgba(0,0,0,.68), rgba(0,0,0,0));
     z-index: 4;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+
+.featured-work-item:not(.is-active) .work-item-bottom-shadow {
+    opacity: 0.7;
 }
 
 /* ── VIDEO ───────────────────────────────────────────────────────────────── */
@@ -151,7 +195,7 @@
     object-fit: cover;
     z-index: 1;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s ease;
 }
 
 /* Video becomes visible only when ready AND active */
@@ -354,7 +398,7 @@
     justify-content: center;
     align-items: center;
     z-index: 10;
-    transition: background 0.35s ease;
+    transition: background 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     pointer-events: none;
 }
 
@@ -364,8 +408,8 @@
     text-transform: uppercase;
     font-weight: 500;
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.35s ease, transform 0.35s ease;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
     text-align: center;
     padding: 0 24px;
     margin: 0;
@@ -376,8 +420,8 @@
     font-size: 15px;
     margin-top: 12px;
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
     text-align: center;
     padding: 0 32px;
     max-width: 420px;
@@ -385,7 +429,7 @@
 }
 
 .featured-work-item.is-revealed .work-item-click-overlay {
-    background: rgba(0, 0, 0, 0.62);
+    background: rgba(0, 0, 0, 0.75);
 }
 
 .featured-work-item.is-revealed .overlay-title,
