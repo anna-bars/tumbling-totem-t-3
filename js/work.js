@@ -1,5 +1,4 @@
 class WorksSlider {
-
     constructor(section) {
         this.section    = section;
         this.cursorZone = section.querySelector(".featured-works-cont");
@@ -38,22 +37,19 @@ class WorksSlider {
         this.smoothX = 0; this.smoothY = 0;
 
         this._bindEvents();
-this._bindProgressScrub();
-this._animateCursor();
+        this._bindProgressScrub();
+        this._animateCursor();
 
-// 🔥 wait for layout stabilization BEFORE first center
-requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-        this.centerSlide(false);
-        this._updateVideo();
-    });
-});
+        // Initialize
+        setTimeout(() => {
+            this.centerSlide(false);
+            this._updateVideo();
+        }, 100);
 
-this._bindSectionObserver();
+        this._bindSectionObserver();
     }
 
     // ─── Section visibility observer ─────────────────────────────────────────
-
     _bindSectionObserver() {
         const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
@@ -65,7 +61,6 @@ this._bindSectionObserver();
                 }
             });
         }, { threshold: 0.2 });
-
         observer.observe(this.section);
     }
 
@@ -81,63 +76,45 @@ this._bindSectionObserver();
     }
 
     // ─── Video ────────────────────────────────────────────────────────────────
-
     _updateVideo() {
-    if (!this._sectionVisible) return;
+        if (!this._sectionVisible) return;
 
-    this.slides.forEach((slide, idx) => {
-        const video = slide.querySelector('video.work-item-video');
-
-        if (idx === this.currentIndex) {
-
-            if (!video) return;
-
-            // ✅ instant load fix
-            if (!video.src && video.dataset.src) {
-                video.src = video.dataset.src;
-                video.load();
-            }
-
-            if (video.classList.contains('is-ready')) {
-                slide.classList.add('video-playing');
-                slide.classList.add('poster-hidden'); // ❗ instant, no delay
-
-                const p = video.play();
-                if (p) p.catch(() => {});
-
-                this._startProgress(video, slide);
-                return;
-            }
-
-            const onCanPlay = () => {
-                video.classList.add('is-ready');
-                slide.classList.add('video-playing');
-
-                // ❗ no timeout → no preview flash
-                slide.classList.add('poster-hidden');
-
-                const p = video.play();
-                if (p) p.catch(() => {});
-
-                this._startProgress(video, slide);
-            };
-
-            video.addEventListener('canplay', onCanPlay, { once: true });
-
-            if (video.readyState >= 3) {
-                onCanPlay();
+        this.slides.forEach((slide, idx) => {
+            const video = slide.querySelector('video.work-item-video');
+            
+            if (idx === this.currentIndex) {
+                if (!video) return;
+                
+                if (!video.src && video.dataset.src) {
+                    video.src = video.dataset.src;
+                    video.load();
+                }
+                
+                const startVideo = () => {
+                    video.classList.add('is-ready');
+                    slide.classList.add('video-playing');
+                    slide.classList.add('poster-hidden');
+                    
+                    const p = video.play();
+                    if (p) p.catch(() => {});
+                    
+                    this._startProgress(video, slide);
+                };
+                
+                if (video.readyState >= 3) {
+                    startVideo();
+                } else {
+                    video.addEventListener('canplay', startVideo, { once: true });
+                    const p = video.play();
+                    if (p) p.catch(() => {});
+                }
             } else {
-                const p = video.play();
-                if (p) p.catch(() => {});
+                if (video && !video.paused) video.pause();
+                slide.classList.remove('video-playing', 'poster-hidden');
+                if (video) video.classList.remove('is-ready');
             }
-
-        } else {
-            if (video && !video.paused) video.pause();
-
-            slide.classList.remove('video-playing', 'poster-hidden');
-        }
-    });
-}
+        });
+    }
 
     _startProgress(video, slide) {
         if (this._rafId) {
@@ -161,7 +138,6 @@ this._bindSectionObserver();
     }
 
     // ─── Progress scrub ───────────────────────────────────────────────────────
-
     _bindProgressScrub() {
         this.track.addEventListener('mousedown', e => {
             const hit = e.target.closest('.work-item-progress-hit, .work-item-progress');
@@ -194,14 +170,12 @@ this._bindSectionObserver();
     }
 
     // ─── Cursor ───────────────────────────────────────────────────────────────
-
     lerp(a, b, t) { return a + (b - a) * t; }
 
     _animateCursor() {
         this.smoothX = this.lerp(this.smoothX, this.cursorX, 0.12);
         this.smoothY = this.lerp(this.smoothY, this.cursorY, 0.12);
-        this.cursor.style.transform =
-            `translate(${this.smoothX}px, ${this.smoothY}px) translate(-50%, -50%)`;
+        this.cursor.style.transform = `translate(${this.smoothX}px, ${this.smoothY}px) translate(-50%, -50%)`;
         requestAnimationFrame(() => this._animateCursor());
     }
 
@@ -227,7 +201,6 @@ this._bindSectionObserver();
     }
 
     // ─── Slide state ──────────────────────────────────────────────────────────
-
     updateClasses() {
         this.slides.forEach(s =>
             s.classList.remove("is-active", "is-prev", "is-next", "is-revealed"));
@@ -235,93 +208,109 @@ this._bindSectionObserver();
         this.slides[this.currentIndex - 1]?.classList.add("is-prev");
         this.slides[this.currentIndex + 1]?.classList.add("is-next");
     }
-_prepareActiveSlide(slide) {
-    if (!slide) return;
 
-    const video = slide.querySelector('video.work-item-video');
-
-    if (!video) return;
-
-    // preload state BEFORE animation
-    if (!video.src && video.dataset.src) {
-        video.src = video.dataset.src;
-        video.load();
+    _prepareActiveSlide(slide) {
+        if (!slide) return;
+        const video = slide.querySelector('video.work-item-video');
+        if (!video) return;
+        if (!video.src && video.dataset.src) {
+            video.src = video.dataset.src;
+            video.load();
+        }
+        slide.classList.add('video-preparing');
     }
 
-    slide.classList.add('video-preparing');
-}
     centerSlide(animated = true) {
     const active = this.slides[this.currentIndex];
-
     if (!active) return;
-
-    // 🔥 prevent first-frame jump
-    if (!this._didInit) {
-        this._didInit = true;
+    
+    this._prepareActiveSlide(active);
+    
+    const offset = active.offsetLeft - (window.innerWidth / 2) + (active.offsetWidth / 2);
+    
+    if (animated) {
+        // ԱՎԵԼԱՑՐԵՔ transition ժամանակը - 1.2s
+        this.track.style.transition = "transform 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1)";
+    } else {
         this.track.style.transition = "none";
     }
-
-    // 🔥 PRE-STATE before animation
-    this._prepareActiveSlide(active);
-
-    const offset =
-        active.offsetLeft -
-        (window.innerWidth / 2) +
-        (active.offsetWidth / 2);
-
-    this.track.style.transition = animated
-        ? "transform .8s cubic-bezier(.77,0,.18,1)"
-        : "none";
-
+    
     this.track.style.transform = `translateX(${-offset}px)`;
-
     this.updateClasses();
-
+    
     this.isHoveringActive = false;
     clearTimeout(this._hoverTimer);
     this._setLabel('SWIPE');
 }
-    _reorderAndRecenter() {
-        this.track.style.transition = "none";
-        this.track.style.transform  = "translateX(0px)";
-        void this.track.offsetWidth;
-        this.centerSlide(false);
-    }
 
     nextSlide() {
         if (this.track.dataset.animating === "true") return;
         this.track.dataset.animating = "true";
+        
         this.currentIndex++;
         this.centerSlide(true);
-        this.track.addEventListener("transitionend", () => {
+        
+        const onTransitionEnd = () => {
+            this.track.removeEventListener("transitionend", onTransitionEnd);
+            
             if (this.currentIndex >= this.slides.length - 1) {
                 const first = this.slides.shift();
                 this.track.appendChild(first);
                 this.slides.push(first);
                 this.currentIndex--;
-                this._reorderAndRecenter();
+                
+                // Fix position without animation
+                this.track.style.transition = "none";
+                const newActive = this.slides[this.currentIndex];
+                const newOffset = newActive.offsetLeft - (window.innerWidth / 2) + (newActive.offsetWidth / 2);
+                this.track.style.transform = `translateX(${-newOffset}px)`;
+                void this.track.offsetHeight;
+                this.track.style.transition = "transform .8s cubic-bezier(0.2, 0.9, 0.4, 1.1)";
             }
+            
             this._updateVideo();
-            this.track.dataset.animating = "false";
-        }, { once: true });
+            
+            setTimeout(() => {
+                this.track.dataset.animating = "false";
+            }, 50);
+        };
+        
+        this.track.addEventListener("transitionend", onTransitionEnd, { once: true });
     }
 
     prevSlide() {
         if (this.track.dataset.animating === "true") return;
         this.track.dataset.animating = "true";
+        
         this.currentIndex--;
         this.centerSlide(true);
-        this.track.addEventListener("transitionend", () => {
+        
+        const onTransitionEnd = () => {
+            this.track.removeEventListener("transitionend", onTransitionEnd);
+            
             if (this.currentIndex <= 0) {
                 const last = this.slides.pop();
                 this.track.prepend(last);
                 this.slides.unshift(last);
                 this.currentIndex++;
-                this._reorderAndRecenter();
+                
+                // Fix position without animation
+                this.track.style.transition = "none";
+                const newActive = this.slides[this.currentIndex];
+                const newOffset = newActive.offsetLeft - (window.innerWidth / 2) + (newActive.offsetWidth / 2);
+                this.track.style.transform = `translateX(${-newOffset}px)`;
+                void this.track.offsetHeight;
+                this.track.style.transition = "transform .8s cubic-bezier(0.2, 0.9, 0.4, 1.1)";
             }
+            
             this._updateVideo();
-            this.track.dataset.animating = "false";
-        }, { once: true });
+            
+            setTimeout(() => {
+                this.track.dataset.animating = "false";
+            }, 50);
+        };
+        
+        this.track.addEventListener("transitionend", onTransitionEnd, { once: true });
     }
 
     _toggleOverlay(clickedSlide) {
@@ -331,13 +320,13 @@ _prepareActiveSlide(slide) {
     }
 
     // ─── Events ───────────────────────────────────────────────────────────────
-
     _bindEvents() {
         const zone = this.cursorZone;
 
         zone.addEventListener("mouseenter", () => {
             this.cursor.classList.add("is-visible");
         });
+        
         zone.addEventListener("mouseleave", () => {
             this.cursor.classList.remove("is-visible", "is-dragging");
             this.isDragging = false;
@@ -369,9 +358,8 @@ _prepareActiveSlide(slide) {
             const active = this.slides[this.currentIndex];
             if (active) {
                 const rect = active.getBoundingClientRect();
-                const over =
-                    e.clientX >= rect.left && e.clientX <= rect.right &&
-                    e.clientY >= rect.top  && e.clientY <= rect.bottom;
+                const over = e.clientX >= rect.left && e.clientX <= rect.right &&
+                            e.clientY >= rect.top && e.clientY <= rect.bottom;
                 if (over && !this.isHoveringActive) {
                     this.isHoveringActive = true;
                     this._onEnterActive();
@@ -418,6 +406,7 @@ _prepareActiveSlide(slide) {
             this.startX = e.touches[0].clientX;
             this._clickTarget = this.slides.find(s => s.contains(e.target)) || null;
         });
+        
         window.addEventListener("touchend", e => {
             if (!this.isDragging) return;
             const diff = e.changedTouches[0].clientX - this.startX;

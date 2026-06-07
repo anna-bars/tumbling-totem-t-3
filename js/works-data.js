@@ -91,55 +91,51 @@ const WORKS2 = [
 function buildTrackHTML(worksArray, lang, translations) {
     const t = translations[lang];
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
-
+    
     return worksArray.map((w, i) => {
-    const title   = lang === 'nl' ? w.title_nl : w.title_en;
-    const desc    = lang === 'nl' ? w.desc_nl  : w.desc_en;
-    const tag1    = lang === 'nl' ? w.tag1_nl  : w.tag1_en;
-    const tag3    = lang === 'nl' ? w.tag3_nl  : w.tag3_en;
-    const catText = t[w.cat_key] || w.cat_key;
-
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    const poster  = (isMobile && w.image_mobile) ? w.image_mobile : w.image;
-    const hasVideo = !!w.video;
-
-    const videoHTML = hasVideo ? `
-        <video
-            class="work-item-video"
-            data-src="${w.video}"
-            poster="${poster}"
-            muted
-            loop
-            playsinline
-            preload="none"
-        ></video>` : '';
-
-    const progressHTML = hasVideo ? `
-        <div class="work-item-progress-wrap">
-            <div class="work-item-progress">
-                <div class="work-item-progress-fill"></div>
-                <div class="work-item-progress-thumb"></div>
-                <div class="work-item-progress-hit"></div>
-            </div>
-        </div>` : '';
-
-    return `
+        const title = lang === 'nl' ? w.title_nl : w.title_en;
+        const desc = lang === 'nl' ? w.desc_nl : w.desc_en;
+        const tag1 = lang === 'nl' ? w.tag1_nl : w.tag1_en;
+        const tag3 = lang === 'nl' ? w.tag3_nl : w.tag3_en;
+        const catText = t[w.cat_key] || w.cat_key;
+        
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        const poster = (isMobile && w.image_mobile) ? w.image_mobile : w.image;
+        const hasVideo = !!w.video;
+        
+        // ✅ ԿԱՐԵՎՈՐ - video-ով items-ը չունեն background-image
+        const bgStyle = hasVideo ? '' : `style="background-image: url(${poster});"`;
+        
+        const videoHTML = hasVideo ? `
+            <video
+                class="work-item-video"
+                data-src="${w.video}"
+                poster="${poster}"
+                muted
+                loop
+                playsinline
+                preload="none"
+            ></video>` : '';
+        
+        const progressHTML = hasVideo ? `
+            <div class="work-item-progress-wrap">
+                <div class="work-item-progress">
+                    <div class="work-item-progress-fill"></div>
+                    <div class="work-item-progress-thumb"></div>
+                    <div class="work-item-progress-hit"></div>
+                </div>
+            </div>` : '';
+        
+        return `
 <div class="featured-work-item${hasVideo ? ' has-video' : ''}"
-     ${hasVideo ? '' : `style="background-image: url(${poster});"` }
+     ${bgStyle}
      data-work-id="${i + 1}"
      data-overlay-title="${title}"
      data-overlay-desc="${desc}">
-
+    
     ${videoHTML}
-
-    <img class="work-item-seo-img"
-         src="${poster}"
-         alt="${title}"
-         aria-hidden="true"
-         style="position:absolute;width:1px;height:1px;opacity:0;">
-
+    
     <div class="work-item-top-shadow"></div>
-
     <div class="work-item-bottom-info">
         <h2 class="work-item-bottom-info-title">${title}</h2>
         <div class="work-item-bottom-info-tags">
@@ -150,10 +146,8 @@ function buildTrackHTML(worksArray, lang, translations) {
             <p>${tag3}</p>
         </div>
     </div>
-
     ${progressHTML}
-
     <div class="work-item-bottom-shadow"></div>
 </div>`;
-}).join('\n');
+    }).join('\n');
 }
