@@ -14,11 +14,9 @@ class WorksSlider {
         this._hoverTimer  = null;
         this._rafId       = null;
         this._sectionVisible = false;
-        
-        // Constants for transition
-        this.TRANSITION_DURATION = "1.2s";
-        this.TRANSITION_EASING = "cubic-bezier(0.2, 0.9, 0.4, 1.1)";
-        this.TRANSITION_PROPERTY = `transform ${this.TRANSITION_DURATION} ${this.TRANSITION_EASING}`;
+
+        // ✅ ՀԻՆ easing-ը վերադարձված
+        this.TRANSITION_PROPERTY = "transform .8s cubic-bezier(.77,0,.18,1)";
 
         // Build overlay text for each slide
         this.slides.forEach(slide => {
@@ -45,11 +43,9 @@ class WorksSlider {
         this._bindProgressScrub();
         this._animateCursor();
 
-        // Initialize
-        setTimeout(() => {
-            this.centerSlide(false);
-            this._updateVideo();
-        }, 100);
+        // ✅ setTimeout հեռացված - անմիջապես initialize
+        this.centerSlide(false);
+        this._updateVideo();
 
         this._bindSectionObserver();
     }
@@ -86,26 +82,26 @@ class WorksSlider {
 
         this.slides.forEach((slide, idx) => {
             const video = slide.querySelector('video.work-item-video');
-            
+
             if (idx === this.currentIndex) {
                 if (!video) return;
-                
+
                 if (!video.src && video.dataset.src) {
                     video.src = video.dataset.src;
                     video.load();
                 }
-                
+
                 const startVideo = () => {
                     video.classList.add('is-ready');
                     slide.classList.add('video-playing');
                     slide.classList.add('poster-hidden');
-                    
+
                     const p = video.play();
                     if (p) p.catch(() => {});
-                    
+
                     this._startProgress(video, slide);
                 };
-                
+
                 if (video.readyState >= 3) {
                     startVideo();
                 } else {
@@ -222,101 +218,74 @@ class WorksSlider {
             video.src = video.dataset.src;
             video.load();
         }
-        slide.classList.add('video-preparing');
     }
 
     centerSlide(animated = true) {
         const active = this.slides[this.currentIndex];
         if (!active) return;
-        
+
         this._prepareActiveSlide(active);
-        
+
         const offset = active.offsetLeft - (window.innerWidth / 2) + (active.offsetWidth / 2);
-        
-        if (animated) {
-            this.track.style.transition = this.TRANSITION_PROPERTY;
-        } else {
-            this.track.style.transition = "none";
-        }
-        
-        this.track.style.transform = `translateX(${-offset}px)`;
+
+        // ✅ ՀԻՆ transition տրամաբանությունը
+        this.track.style.transition = animated ? this.TRANSITION_PROPERTY : "none";
+        this.track.style.transform  = `translateX(${-offset}px)`;
+
         this.updateClasses();
-        
         this.isHoveringActive = false;
         clearTimeout(this._hoverTimer);
         this._setLabel('SWIPE');
     }
 
+    // ✅ ՀԻՆ _reorderAndRecenter() վերադարձված
+    _reorderAndRecenter() {
+        this.track.style.transition = "none";
+        this.track.style.transform  = "translateX(0px)";
+        void this.track.offsetWidth; // synchronous reflow
+        this.centerSlide(false);
+    }
+
     nextSlide() {
         if (this.track.dataset.animating === "true") return;
         this.track.dataset.animating = "true";
-        
+
         this.currentIndex++;
         this.centerSlide(true);
-        
-        const onTransitionEnd = () => {
-            this.track.removeEventListener("transitionend", onTransitionEnd);
-            
+
+        this.track.addEventListener("transitionend", () => {
             if (this.currentIndex >= this.slides.length - 1) {
                 const first = this.slides.shift();
                 this.track.appendChild(first);
                 this.slides.push(first);
                 this.currentIndex--;
-                
-                // Fix position without animation
-                this.track.style.transition = "none";
-                const newActive = this.slides[this.currentIndex];
-                const newOffset = newActive.offsetLeft - (window.innerWidth / 2) + (newActive.offsetWidth / 2);
-                this.track.style.transform = `translateX(${-newOffset}px)`;
-                void this.track.offsetHeight;
-                // ✅ FIX: use same transition property
-                this.track.style.transition = this.TRANSITION_PROPERTY;
+                this._reorderAndRecenter(); // ✅ ՀԻՆ method
             }
-            
+
             this._updateVideo();
-            
-            setTimeout(() => {
-                this.track.dataset.animating = "false";
-            }, 50);
-        };
-        
-        this.track.addEventListener("transitionend", onTransitionEnd, { once: true });
+            this.track.dataset.animating = "false";
+        }, { once: true });
     }
 
     prevSlide() {
         if (this.track.dataset.animating === "true") return;
         this.track.dataset.animating = "true";
-        
+
         this.currentIndex--;
         this.centerSlide(true);
-        
-        const onTransitionEnd = () => {
-            this.track.removeEventListener("transitionend", onTransitionEnd);
-            
+
+        this.track.addEventListener("transitionend", () => {
             if (this.currentIndex <= 0) {
                 const last = this.slides.pop();
                 this.track.prepend(last);
                 this.slides.unshift(last);
                 this.currentIndex++;
-                
-                // Fix position without animation
-                this.track.style.transition = "none";
-                const newActive = this.slides[this.currentIndex];
-                const newOffset = newActive.offsetLeft - (window.innerWidth / 2) + (newActive.offsetWidth / 2);
-                this.track.style.transform = `translateX(${-newOffset}px)`;
-                void this.track.offsetHeight;
-                // ✅ FIX: use same transition property
-                this.track.style.transition = this.TRANSITION_PROPERTY;
+                this._reorderAndRecenter(); // ✅ ՀԻՆ method
             }
-            
+
             this._updateVideo();
-            
-            setTimeout(() => {
-                this.track.dataset.animating = "false";
-            }, 50);
-        };
-        
-        this.track.addEventListener("transitionend", onTransitionEnd, { once: true });
+            this.track.dataset.animating = "false";
+        }, { once: true });
     }
 
     _toggleOverlay(clickedSlide) {
@@ -332,7 +301,7 @@ class WorksSlider {
         zone.addEventListener("mouseenter", () => {
             this.cursor.classList.add("is-visible");
         });
-        
+
         zone.addEventListener("mouseleave", () => {
             this.cursor.classList.remove("is-visible", "is-dragging");
             this.isDragging = false;
@@ -365,7 +334,7 @@ class WorksSlider {
             if (active) {
                 const rect = active.getBoundingClientRect();
                 const over = e.clientX >= rect.left && e.clientX <= rect.right &&
-                            e.clientY >= rect.top && e.clientY <= rect.bottom;
+                             e.clientY >= rect.top  && e.clientY <= rect.bottom;
                 if (over && !this.isHoveringActive) {
                     this.isHoveringActive = true;
                     this._onEnterActive();
@@ -412,7 +381,7 @@ class WorksSlider {
             this.startX = e.touches[0].clientX;
             this._clickTarget = this.slides.find(s => s.contains(e.target)) || null;
         });
-        
+
         window.addEventListener("touchend", e => {
             if (!this.isDragging) return;
             const diff = e.changedTouches[0].clientX - this.startX;
